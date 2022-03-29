@@ -265,11 +265,11 @@
                         p.osc.freq(p.freq, .1);
                         p.osc.amp(.5, .1);
                         p.canvasScale += .24 / p.breatheInTimeFrames;
-                        p.text("вдохни", p.screenCenterX, p.screenCenterY);
+                        p.text("inhale", p.screenCenterX, p.screenCenterY);
                     } else {
                         if (p.frame <= p.holdTimeFrames) {
                             p.osc.amp(0, .1);
-                            p.text("задержи", p.screenCenterX, p.screenCenterY);
+                            p.text("hold", p.screenCenterX, p.screenCenterY);
                         } else {
                             if (p.frame <= p.breatheOutTimeFramesStop) {
                                 p.volume -= .8 / p.breatheOutTimeFrames;
@@ -277,7 +277,7 @@
                                 p.osc.freq(p.freq, .1);
                                 p.osc.amp(.5, .1);
                                 p.canvasScale -= .24 / p.breatheOutTimeFrames;
-                                p.text("выдохни", p.screenCenterX, p.screenCenterY);
+                                p.text("exhale", p.screenCenterX, p.screenCenterY);
                             }
                         }
                     }
