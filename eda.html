@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Календарь</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css"
+          integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+
+</head>
+<style>
+    /* Фон календаря и заголовка */
+    body {
+        background-color: #F8FBF9;
+    }
+
+    .card {
+        background-color: #F8FBF9;
+    }
+
+    .card-header {
+        background-color: #68B686;
+        color: #FFF; /* Цвет текста заголовка */
+    }
+
+    /* Цвет текста ячеек дней недели */
+    th {
+        color: #62A50F;
+    }
+
+    /* Цвет текста дней в календаре */
+    td {
+        color: #666A2A;
+    }
+
+    /* Цвет текста информации о приемах пищи */
+    .meal-info {
+        color: #281E11;
+    }
+</style>
+<body>
+<div class="container col-md-7">
+    <div class="card">
+        <h3 class="card-header" id="monthAndYear"></h3>
+        <table class="table table-bordered table-responsive-sm" id="calendar">
+            <thead>
+            <tr>
+                <th>Вс</th>
+                <th>Пн</th>
+                <th>Вт</th>
+                <th>Ср</th>
+                <th>Чт</th>
+                <th>Пт</th>
+                <th>Сб</th>
+            </tr>
+            </thead>
+
+            <tbody id="calendar-body">
+
+            </tbody>
+        </table>
+
+        <div class="form-inline">
+
+            <button class="btn btn-outline-primary col-sm-6" id="previous" onclick="previous()">Предыдущий</button>
+
+            <button class="btn btn-outline-primary col-sm-6" id="next" onclick="next()">Следующий</button>
+        </div>
+        <br/>
+        <form class="form-inline">
+            <label class="lead mr-2 ml-2" for="month">Перейти к: </label>
+            <select class="form-control col-sm-4" name="month" id="month" onchange="jump()">
+                <option value=0>Янв</option>
+                <option value=1>Фев</option>
+                <option value=2>Мар</option>
+                <option value=3>Апр</option>
+                <option value=4>Май</option>
+                <option value=5>Июн</option>
+                <option value=6>Июл</option>
+                <option value=7>Авг</option>
+                <option value=8>Сен</option>
+                <option value=9>Окт</option>
+                <option value=10>Ноя</option>
+                <option value=11>Дек</option>
+            </select>
+
+
+            <label for="year"></label><select class="form-control col-sm-4" name="year" id="year" onchange="jump()">
+                <option value=1990>1990</option>
+                <option value=1991>1991</option>
+                <option value=1992>1992</option>
+                <!-- Add more years as needed -->
+            </select></form>
+    </div>
+</div>
+
+<script>
+    let today = new Date(); // Получение текущей даты
+    let currentMonth = today.getMonth(); // Получение текущего месяца (от 0 до 11)
+    let currentYear = today.getFullYear(); // Получение текущего года
+    let selectYear = document.getElementById("year"); // Получение элемента для выбора года из HTML
+    let selectMonth = document.getElementById("month"); // Получение элемента для выбора месяца из HTML
+
+    let months = ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"]; // Массив с названиями месяцев
+
+    let monthAndYear = document.getElementById("monthAndYear"); // Получение элемента для отображения месяца и года из HTML
+    showCalendar(currentMonth, currentYear); // Вызов функции для отображения календаря с текущим месяцем и годом
+
+    // Функция для переключения на следующий месяц
+    function next() {
+        currentYear = (currentMonth === 11) ? currentYear + 1 : currentYear;
+        currentMonth = (currentMonth + 1) % 12;
+        showCalendar(currentMonth, currentYear);
+    }
+
+    // Функция для переключения на предыдущий месяц
+    function previous() {
+        currentYear = (currentMonth === 0) ? currentYear - 1 : currentYear;
+        currentMonth = (currentMonth === 0) ? 11 : currentMonth - 1;
+        showCalendar(currentMonth, currentYear);
+    }
+
+    // Функция для перехода к выбранному месяцу и году
+    function jump() {
+        currentYear = parseInt(selectYear.value);
+        currentMonth = parseInt(selectMonth.value);
+        showCalendar(currentMonth, currentYear);
+    }
+
+    // Функция для отображения календаря для заданного месяца и года
+    function showCalendar(month, year) {
+        let firstDay = (new Date(year, month)).getDay(); // Получение дня недели, с которого начинается месяц
+        let daysInMonth = 32 - new Date(year, month, 32).getDate(); // Получение количества дней в месяце
+
+        let tbl = document.getElementById("calendar-body"); // Получение элемента для тела календаря из HTML
+
+        // Очистка всех предыдущих ячеек календаря
+        tbl.innerHTML = "";
+
+        // Загрузка данных о приемах пищи из файла eda.json
+        fetch("eda.json")
+            .then(response => response.json())
+            .then(data => {
+                let edaData = data;
+
+                // Заполнение данных о месяце и годе на странице через DOM
+                monthAndYear.innerHTML = months[month] + " " + year; // Отображение месяца и года
+                selectYear.value = year; // Установка выбранного года в выпадающем списке
+                selectMonth.value = month; // Установка выбранного месяца в выпадающем списке
+
+                // Создание всех ячеек календаря
+                let date = 1;
+                for (let i = 0; i < 6; i++) {
+                    // Создание строки таблицы
+                    let row = document.createElement("tr");
+
+                    // Создание отдельных ячеек и заполнение их данными
+                    for (let j = 0; j < 7; j++) {
+                        if (i === 0 && j < firstDay) {
+                            let cell = document.createElement("td");
+                            let cellText = document.createTextNode("");
+                            cell.appendChild(cellText);
+                            row.appendChild(cell);
+                        } else if (date > daysInMonth) {
+                            break;
+                        } else {
+                            let cell = document.createElement("td");
+                            let cellText = document.createTextNode(date);
+                            let mealInfo = document.createElement("div"); // Создание элемента для информации о приемах пищи
+                            mealInfo.className = "meal-info"; // Добавление класса для стилизации
+
+                            // Формат даты в eda.json: "год-месяц-день"
+                            let formattedDate = `${year}-${(month + 1).toString().padStart(2, '0')}-${date.toString().padStart(2, '0')}`;
+                            // Загрузка информации о приемах пищи из файла eda.json
+							let d=`${date.toString().padStart(1, '0')}`;
+							let mealData = edaData[d];
+							console.log(d);
+                            if (mealData) {
+                                // Вставка информации о приемах пищи в ячейку календаря
+                                mealInfo.innerHTML = `<mark><b>Завтрак</b>: ${mealData.Breakfast}<br/>
+                                    <b>Обед</b>: ${mealData.Lunch}<br/>
+									<b>Ужин</b>: ${mealData.Dinner}<br/>
+                                    <b>Закуски</b>: ${mealData.Snacks}</mark>
+                                `;
+                            }
+
+                            cell.appendChild(cellText);
+                            cell.appendChild(mealInfo);
+                            row.appendChild(cell);
+                            date++;
+                        }
+                    }
+
+                    tbl.appendChild(row); // Добавление каждой строки в тело календаря
+                }
+            })
+            .catch(error => console.error("Ошибка при загрузке файла eda.json:", error));
+    }
+</script>
+
+<!-- Дополнительный JavaScript для Bootstrap -->
+<!-- Сначала jQuery, затем Popper.js, затем Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"
+        integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"
+        integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"
+        crossorigin="anonymous"></script>
+</body>
+</html>
